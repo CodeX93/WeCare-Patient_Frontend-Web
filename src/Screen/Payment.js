@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, CircularProgress, Typography } from "@mui/material";
+import { Button, CircularProgress, Snackbar, Typography } from "@mui/material";
 import axios from "axios";
 import {
   Elements,
@@ -10,9 +10,10 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import "../Styles/payment.css";
+import { IP } from "../assets/ConstantValues";
 
 const stripeClientKey =
-  "pk_test_51N5kR5AHUmt4BX2AiORBeGUfKjZRhNIreprl0UbzsH3CPvDXwmIbDchH1b3AVqLzE1ZivesgCu6UVDMJ0RWM2laB001HKeBkks";
+  "pk_test_51OxWu1Hdm4ffwvcmi9EKQdEFRNwStMxm7rwGnN77iGXtg6uiYcbzZE8CafzhhiAR1lDgZC8momWK1IrVvqT7Fj0K00TCjCzH2y";
 const stripePromise = loadStripe(stripeClientKey);
 
 const CheckoutForm = ({ handlePaymentSuccess, appointmentDetails }) => {
@@ -28,20 +29,38 @@ const CheckoutForm = ({ handlePaymentSuccess, appointmentDetails }) => {
       return;
     }
 
-    setTimeout(async () => {
-      try {
-        // Call the Stripe API here to process the payment
-        // Replace with your actual Stripe payment logic
+    try {
+      // Call your backend API to create a payment intent
+      const response = await axios.post(`${IP}:4641/create-payment-intent`, {
+        amount: appointmentDetails.fee, // Assuming fee is the amount to be paid
+        currency: "usd", // Assuming the currency is USD, change it if needed
+      });
+      console.log(appointmentDetails.appointmentLink);
 
+      const clientSecret = response.data.clientSecret;
+
+      // Use the client secret to confirm the payment on the client side
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            name: appointmentDetails.doctorName,
+          },
+        },
+      });
+
+      if (result.error) {
+        console.error("Payment failed:", result.error.message);
+      } else {
+        console.log("Payment successful:", result.paymentIntent);
         // If payment is successful, call the parent component's function
-        console.log("Payment successful!");
         handlePaymentSuccess();
-      } catch (error) {
-        console.error("Payment failed:", error.message);
-      } finally {
-        setLoading(false);
       }
-    }, 2000);
+    } catch (error) {
+      console.error("Payment failed:", error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,39 +93,57 @@ const CheckoutForm = ({ handlePaymentSuccess, appointmentDetails }) => {
         <Typography variant="h6" gutterBottom>
           Appointment Details:
         </Typography>
-        <Typography>Speciality: {appointmentDetails.speciality}</Typography>
-        <Typography>Doctor: {appointmentDetails.doctor}</Typography>
-        <Typography>
-          Appointment Date: {appointmentDetails.appointmentDate}
-        </Typography>
-        <Typography>
-          Selected Slot: {appointmentDetails.selectedSlot}
-        </Typography>
+        <Typography>Hospital At: {appointmentDetails.hospital}</Typography>
+        <Typography>Speciality: {appointmentDetails.department}</Typography>
+        <Typography>Doctor: {appointmentDetails.doctorName}</Typography>
+        <Typography>Appointment Date: {appointmentDetails.date}</Typography>
+        <Typography>Appointment Mode: {appointmentDetails.type}</Typography>
+        <Typography>Selected Slot: {appointmentDetails.slot}</Typography>
         <Typography>Complaint: {appointmentDetails.complain}</Typography>
         <Typography>Fee: {appointmentDetails.fee}</Typography>
       </div>
     </form>
   );
 };
-
 const Payment = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { appointmentDetails } = location.state || {};
-  console.log(appointmentDetails);
+
   const handlePaymentSuccess = async () => {
     try {
       // Handle successful payment here, e.g., show an alert with appointment details
-
+      console.log(appointmentDetails);
       // Make a POST request to your backend API to save the appointmentDetails
       const response = await axios.post(
-        "http://localhost:4003/appointment/makeappointment",
+        `${IP}:3067/appointment/makeappointment`,
         appointmentDetails
       );
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         alert("Appointment placed successfully.");
-        navigate("/home");
+
+        console.log(appointmentDetails.slotId);
+        try {
+          // Prepare data for updating slot availability
+          const slotData = {
+            uniqueIdentifier: appointmentDetails.doctorId, // Assuming doctorId is available in appointmentDetails
+            slotUuid: appointmentDetails.slotId,
+            newStatus: "Booked", // Assuming the new status should be "Booked"
+          };
+
+          const updateResponse = await axios.post(
+            "http://localhost:5001/api/slots/updateAvailibility",
+            slotData
+          );
+
+          if (updateResponse.status === 200) {
+            console.log("Slot booking updated successfully.", "success");
+            navigate("/home");
+          }
+        } catch (error) {
+          console.log("Error in updating availability:", error);
+        }
       } else {
         alert("Error placing appointment.");
       }

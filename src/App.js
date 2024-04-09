@@ -16,6 +16,10 @@ import Newsfeed from "./Screen/Newsfeed";
 import ChatScreen from "./Screen/ChatScreen";
 import SpecificAppointment from "./Screen/SpecificAppointment";
 import Payment from "./Screen/Payment";
+import TopNavBar from "./Components/TopNavBar";
+import Telemedicine from "./Screen/Telemed";
+import MyMedicalRecords from "./Screen/MyMedicalRecords";
+import MedicalRecordDetails from "./Screen/SpecificMedicalRecord";
 // import { useUser } from "./Context/UserContext";
 
 function App() {
@@ -45,24 +49,32 @@ function App() {
   // const { setUser } = useUser();
 
   return (
-    <ThemeProvider theme={theme}>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/home" element={<Demo />} />
-        <Route path="/createAppointment" element={<CreateAppointment />} />
-        <Route path="/appointment" element={<MyAllAppointment />} />
-        <Route path="/doctors" element={<AllDoctor />} />
-        <Route path="/specificdoctor" element={<SpecificDoctor />} />
-        <Route path="/specificappointment" element={<SpecificAppointment />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/forum" element={<Newsfeed />} />
-        <Route path="/medical-record" element={<UploadMedicalRecord />} />
-        <Route path="/todo" element={<Todo />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/chats" element={<ChatScreen />} />
-      </Routes>
-    </ThemeProvider>
+    <>
+      <ThemeProvider theme={theme}>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/home" element={<Demo />} />
+          <Route path="/createAppointment" element={<CreateAppointment />} />
+          <Route path="/appointment" element={<MyAllAppointment />} />
+          <Route path="/doctors" element={<AllDoctor />} />
+          <Route path="/specificdoctor" element={<SpecificDoctor />} />
+          <Route path="/call" element={<Telemedicine />} />
+          <Route
+            path="/specificappointment"
+            element={<SpecificAppointment />}
+          />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/forum" element={<Newsfeed />} />
+          <Route path="/get-medical" element={<MedicalRecordDetails />} />
+          <Route path="/medical-record" element={<MyMedicalRecords />} />
+          <Route path="/add-medical-record" element={<UploadMedicalRecord />} />
+          <Route path="/todo" element={<Todo />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/chats" element={<ChatScreen />} />
+        </Routes>
+      </ThemeProvider>
+    </>
   );
 }
 

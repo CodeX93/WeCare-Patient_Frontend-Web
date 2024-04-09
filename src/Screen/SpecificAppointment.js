@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import LeftNavbar from "../Components/LeftNavBar";
+import { IP } from "../assets/ConstantValues";
 import {
   Box,
   Container,
@@ -10,17 +11,57 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import axios from "axios";
 import CallIcon from "@mui/icons-material/Call";
 import VideoCallIcon from "@mui/icons-material/VideoCall";
-import { useLocation } from "react-router-dom"; // Import useLocation
+import { useLocation, useNavigate } from "react-router-dom"; // Import useLocation
 
 function SpecificAppointment() {
+  const Navigator = useNavigate();
+  const [profilePic, setProfilePic] = useState(null); // Initialize profilePic state
+  const [MeetingLink, setLink] = useState("");
+  const [appointment, setAppointment] = useState(null); // Initialize appointment state
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Use useLocation hook to access the appointment data from state
   const location = useLocation();
-  const appointment = location.state && location.state.appointment;
+  useEffect(() => {
+    if (location.state && location.state.appointment) {
+      setAppointment(location.state.appointment);
+    }
+  }, [location.state]);
+  console.log(appointment);
+  useEffect(() => {
+    // Fetch doctor data when the appointment changes
+    const fetchDoctorData = async (doctorId) => {
+      try {
+        const response = await axios.get(
+          `${IP}:5006/api/user/getdoc/${doctorId}`
+        );
+
+        // Set the profilePic state with the fetched profilePic
+        if (response.data && response.data.profilePic) {
+          setProfilePic(response.data.profilePic);
+        } else {
+          console.log("Profile pic not found in response data");
+        }
+      } catch (error) {
+        console.error("Error fetching doctor data:", error);
+      }
+    };
+
+    if (appointment) {
+      console.log(appointment);
+      console.log(appointment.doctorId);
+      if (appointment.type === "Online") {
+        setLink(appointment.meetingLink);
+      }
+      fetchDoctorData(appointment.doctorId);
+      console.log(MeetingLink);
+    }
+  }, [appointment]); // Fetch doctor data when appointment changes
+
   const layoutStyle = {
     display: "flex",
     marginTop: "20px",
@@ -29,6 +70,7 @@ function SpecificAppointment() {
   const contentStyle = {
     flexGrow: 1,
     marginLeft: "10px",
+    marginTop: "80px",
   };
 
   return (
@@ -36,7 +78,7 @@ function SpecificAppointment() {
       <LeftNavbar />
 
       <Container style={contentStyle}>
-        {appointment ? (
+        {profilePic ? (
           <Box
             display="flex"
             flexDirection="column"
@@ -46,8 +88,8 @@ function SpecificAppointment() {
             p={2}
           >
             <Avatar
-              src="/doctor-profile.jpg" // Replace with actual image path
-              alt={appointment.doctor}
+              src={profilePic} // Set Avatar src with profilePic
+              alt={`${appointment.doctorName}`}
               sx={{
                 width: isMobile ? 100 : 150,
                 height: isMobile ? 100 : 150,
@@ -55,15 +97,15 @@ function SpecificAppointment() {
               }}
             />
             <Typography variant="h5" component="h1" gutterBottom>
-              {"Dr. " + appointment.doctor}
+              {"Dr. " + appointment.doctorName}
             </Typography>
             <Typography variant="subtitle1" color="textSecondary" gutterBottom>
-              {appointment.speciality}
+              {appointment.department}
             </Typography>
           </Box>
         ) : (
           <Typography variant="h5" component="h1" gutterBottom>
-            No appointment data available.
+            {profilePic}
           </Typography>
         )}
 
@@ -86,12 +128,7 @@ function SpecificAppointment() {
               fullWidth
               margin="normal"
             />
-            <Typography variant="h6" component="h2" gutterBottom>
-              Purpose
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              {appointment.complain}
-            </Typography>
+
             <Typography variant="h6" component="h2" gutterBottom>
               Appointment On
             </Typography>
@@ -101,8 +138,11 @@ function SpecificAppointment() {
               style={{ marginLeft: "8px" }}
             >
               <strong>
-                {appointment.appointmentDate}&nbsp;&nbsp;&nbsp;
-                {appointment.selectedSlot}
+                <Typography variant="body1">
+                  {new Date(appointment.date)
+                    .toLocaleDateString("en-GB")
+                    .replace(/\//g, " - ")}
+                </Typography>
               </strong>
             </Typography>
             <Typography variant="body1" gutterBottom></Typography>
@@ -113,21 +153,16 @@ function SpecificAppointment() {
             <Box mt={2}>
               <Button
                 variant="contained"
-                color="primary"
+                style={{ backgroundColor: "#307867" }}
+                onClick={() =>
+                  Navigator(`/call`, { state: { meetingLink: MeetingLink } })
+                }
                 startIcon={<CallIcon />}
-                sx={{ mr: 1 }}
+                sx={{ mb: 2 }}
               >
-                Audio Call
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                startIcon={<VideoCallIcon />}
-              >
-                Video Call
+                Attend Appointment
               </Button>
             </Box>
-            ){/* } */}
           </Box>
         )}
       </Container>

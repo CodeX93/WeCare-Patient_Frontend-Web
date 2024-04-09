@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { auth, db } from "../Firebase-config"; // Adjust the path as necessary
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
+import signUpIllustration from "../assets/signup.png";
 import {
   getStorage,
   ref,
@@ -15,6 +16,7 @@ import {
   Typography,
   Container,
   Paper,
+  useMediaQuery,
   FormControl,
   InputLabel,
   Select,
@@ -30,7 +32,8 @@ function Signup() {
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [name, setName] = useState("");
+  const [firstname, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -60,6 +63,7 @@ function Signup() {
       reader.readAsDataURL(selectedFile);
     }
   };
+  const isLargeScreen = useMediaQuery((theme) => theme.breakpoints.up("lg"));
 
   const handleDobChange = (event) => {
     const newDob = event.target.value;
@@ -95,14 +99,13 @@ function Signup() {
 
       // Update profile in Firebase Auth
       await updateProfile(userCredential.user, {
-        displayName: name,
+        displayName: firstname + " " + lastName,
         photoURL: downloadURL,
       });
 
       await setDoc(doc(db, "users", userCredential.user.uid), {
-        uid: userCredential.user.uid,
-        displayName: name,
-        name,
+        firstname,
+        lastName,
         email,
         dob,
         age,
@@ -124,152 +127,377 @@ function Signup() {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Paper elevation={3} style={{ padding: "20px", marginTop: "20vh" }}>
-        <Typography component="h1" variant="h5">
-          Sign Up
-        </Typography>
-        <form noValidate onSubmit={handleSubmit}>
-          <Button
-            variant="outlined"
-            component="label"
-            style={{ display: "block", margin: "10px auto" }}
-          >
-            <Avatar
-              src={profileImage}
-              style={{ width: "100px", height: "100px", margin: "10px auto" }}
-            />
-
-            <input type="file" hidden onChange={handleImageChange} />
-          </Button>
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            id="name"
-            label="Name"
-            name="name"
-            autoFocus
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            name="confirmPassword"
-            label="Confirm Password"
-            type="password"
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          <TextField
-            id="dob"
-            label="Date of Birth"
-            type="date"
-            fullWidth
-            margin="normal"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            name="dob"
-            value={dob}
-            onChange={handleDobChange}
-          />
-          <Typography variant="body1" style={{ marginTop: "10px" }}>
-            Age: {age}
-          </Typography>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="gender-label">Gender</InputLabel>
-            <Select
-              labelId="gender-label"
-              id="gender"
-              label="Gender"
-              name="gender"
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
+    <>
+      {isLargeScreen ? (
+        <Container maxWidth="lg">
+          <div style={{ display: "flex", height: "100vh" }}>
+            {/* Left Section (70%) */}
+            <div
+              style={{
+                flex: "0 0 70%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
             >
-              <MenuItem value="Male">Male</MenuItem>
-              <MenuItem value="Female">Female</MenuItem>
-              <MenuItem value="Other">Other</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            id="bloodGroup"
-            label="Blood Group"
-            name="bloodGroup"
-            value={bloodGroup}
-            onChange={(e) => setBloodGroup(e.target.value)}
-          />
+              <div>
+                <Typography component="h1" variant="h4" gutterBottom>
+                  Get yourself Register with WeCare today
+                </Typography>
+                <img
+                  src={signUpIllustration}
+                  alt="Sign Up Illustration"
+                  style={{ width: "100%", height: "auto" }}
+                />
+                {/* Add more text or illustration as needed */}
+              </div>
+            </div>
 
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            id="city"
-            label="Ciy"
-            name="City"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-          />
+            {/* Right Section (30%) */}
+            <Paper
+              elevation={3}
+              style={{
+                flex: "0 0 30%",
+                padding: "20px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Typography component="h1" variant="h5">
+                Sign Up Now
+              </Typography>
+              <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  style={{ display: "block", margin: "10px auto" }}
+                >
+                  <Avatar
+                    src={profileImage}
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      margin: "10px auto",
+                    }}
+                  />
 
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            id="contactNo"
-            label="Contact No"
-            name="contactNo"
-            type="tel"
-            value={contactNo}
-            onChange={(e) => setContactNo(e.target.value)}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            style={{ margin: "20px 0" }}
-            disabled={isLoading}
+                  <input type="file" hidden onChange={handleImageChange} />
+                </Button>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="firstName"
+                  label="First Name"
+                  name="firstname"
+                  autoFocus
+                  value={firstname}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="lastName"
+                  label="Last Name"
+                  name="lastname"
+                  autoFocus
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="email"
+                  label="Email Address"
+                  name="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  type="password"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <TextField
+                  id="dob"
+                  label="Date of Birth"
+                  type="date"
+                  fullWidth
+                  margin="normal"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  name="dob"
+                  value={dob}
+                  onChange={handleDobChange}
+                />
+                <Typography variant="body1" style={{ marginTop: "10px" }}>
+                  Age: {age}
+                </Typography>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel id="gender-label">Gender</InputLabel>
+                  <Select
+                    labelId="gender-label"
+                    id="gender"
+                    label="Gender"
+                    name="gender"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                  >
+                    <MenuItem value="Male">Male</MenuItem>
+                    <MenuItem value="Female">Female</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="bloodGroup"
+                  label="Blood Group"
+                  name="bloodGroup"
+                  value={bloodGroup}
+                  onChange={(e) => setBloodGroup(e.target.value)}
+                />
+
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="city"
+                  label="Ciy"
+                  name="City"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="contactNo"
+                  label="Contact No"
+                  name="contactNo"
+                  type="tel"
+                  value={contactNo}
+                  onChange={(e) => setContactNo(e.target.value)}
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  style={{ margin: "20px 0" }}
+                  disabled={isLoading}
+                >
+                  {isLoading ? <CircularProgress size={24} /> : "Sign Up"}
+                </Button>
+              </form>
+            </Paper>
+          </div>
+        </Container>
+      ) : (
+        <Container maxWidth="md">
+          {/* Right Section (for small screens) */}
+          <Paper
+            elevation={3}
+            style={{
+              width: "100%",
+            }}
           >
-            {isLoading ? <CircularProgress size={24} /> : "Sign Up"}
-          </Button>
-        </form>
-      </Paper>
-    </Container>
+            <Typography component="h1" variant="h5">
+              Register Yourself Today
+            </Typography>
+
+            <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+              <Button
+                variant="outlined"
+                component="label"
+                style={{ display: "block", margin: "10px auto" }}
+              >
+                <Avatar
+                  src={profileImage}
+                  style={{
+                    width: "100px",
+                    height: "100px",
+                    margin: "10px auto",
+                  }}
+                />
+
+                <input type="file" hidden onChange={handleImageChange} />
+              </Button>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                id="firstName"
+                label="First Name"
+                name="firstname"
+                autoFocus
+                value={firstname}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                id="lastName"
+                label="Last Name"
+                name="lastname"
+                autoFocus
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                name="confirmPassword"
+                label="Confirm Password"
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <TextField
+                id="dob"
+                label="Date of Birth"
+                type="date"
+                fullWidth
+                margin="normal"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                name="dob"
+                value={dob}
+                onChange={handleDobChange}
+              />
+              <Typography variant="body1" style={{ marginTop: "10px" }}>
+                Age: {age}
+              </Typography>
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="gender-label">Gender</InputLabel>
+                <Select
+                  labelId="gender-label"
+                  id="gender"
+                  label="Gender"
+                  name="gender"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                >
+                  <MenuItem value="Male">Male</MenuItem>
+                  <MenuItem value="Female">Female</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                id="bloodGroup"
+                label="Blood Group"
+                name="bloodGroup"
+                value={bloodGroup}
+                onChange={(e) => setBloodGroup(e.target.value)}
+              />
+
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                id="city"
+                label="Ciy"
+                name="City"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              />
+
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                id="contactNo"
+                label="Contact No"
+                name="contactNo"
+                type="tel"
+                value={contactNo}
+                onChange={(e) => setContactNo(e.target.value)}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                style={{ backgroundColor: "#307867", margin: "20px 0" }}
+                disabled={isLoading}
+              >
+                {isLoading ? <CircularProgress size={24} /> : "Sign Up"}
+              </Button>
+            </form>
+          </Paper>
+        </Container>
+      )}
+    </>
   );
 }
 export default Signup;

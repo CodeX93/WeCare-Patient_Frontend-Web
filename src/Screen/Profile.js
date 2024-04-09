@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { IP } from "../assets/ConstantValues";
 import LeftNavBar from "../Components/LeftNavBar";
+
 import {
   TextField,
   Button,
   Container,
   Typography,
+  CircularProgress,
   Snackbar,
   FormControl,
   InputLabel,
@@ -26,7 +29,7 @@ const Profile = () => {
       if (user) {
         // Fetch user data from your database using the user's UID
         axios
-          .post("http://localhost:4008/patient/get", { uid: user.uid })
+          .post(`${IP}:4008/patient/get`, { uid: user.uid })
           .then((response) => {
             setProfile(response.data); // Set the user data to state
           })
@@ -42,10 +45,31 @@ const Profile = () => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setProfile((prevProfile) => ({
-      ...prevProfile,
-      [name]: value,
-    }));
+
+    // If the name is 'name', split the value into 'firstName' and 'lastName'
+    if (name === "name") {
+      const nameParts = value.split(" ");
+      let firstName = "";
+      let lastName = "";
+
+      if (nameParts.length > 1) {
+        firstName = nameParts.shift(); // Get the first part as firstName
+        lastName = nameParts.join(" "); // Join the remaining parts as lastName
+      } else {
+        firstName = nameParts[0]; // Assign the only part to firstName
+      }
+
+      setProfile((prevProfile) => ({
+        ...prevProfile,
+        firstName: firstName,
+        lastName: lastName,
+      }));
+    } else {
+      setProfile((prevProfile) => ({
+        ...prevProfile,
+        [name]: value,
+      }));
+    }
   };
 
   const handleProfilePictureChange = (event) => {
@@ -55,11 +79,14 @@ const Profile = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (profile) {
+      // Remove the 'email' field from the profile object
+      const { email, ...profileData } = profile;
+
       // Replace ':id' with the actual ID of the patient.
       // Ensure that this ID matches the ID in the database.
-      const patientId = profile.id; // Change to the correct property name that contains the ID
+      const patientId = getAuth().currentUser.uid; // Change to the correct property name that contains the ID
       axios
-        .put(`http://localhost:4008/patient/update/${patientId}`, profile)
+        .put(`${IP}:4008/patient/update/${patientId}`, profileData) // Send profileData instead of profile
         .then((response) => {
           // console.log("Profile updated successfully", response.data);
           setSuccessMessageOpen(true);
@@ -78,16 +105,25 @@ const Profile = () => {
   };
 
   if (!profile) {
-    return <div>Loading...</div>; // Show a loading state while waiting for profile data
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh", // Make the box take up the entire viewport height
+        }}
+      >
+        <CircularProgress color="primary" size={80} />{" "}
+        {/* Adjust size as needed */}
+      </Box>
+    ); // Show a loading state while waiting for profile data
   }
 
   return (
-    <Box sx={{ display: "flex", mt: 4 }}>
+    <Box sx={{ display: "flex", mt: 4, marginTop: "180px" }}>
       <LeftNavBar />
       <Container maxWidth="sm" sx={{ flexGrow: 1, ml: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          Profile
-        </Typography>
         <form onSubmit={handleSubmit}>
           <input
             accept="image/*"
@@ -109,7 +145,7 @@ const Profile = () => {
             fullWidth
             label="Name"
             name="name"
-            value={profile.displayName}
+            value={profile.firstName + " " + profile.lastName}
             onChange={handleChange}
             margin="normal"
             variant="outlined"
@@ -119,7 +155,6 @@ const Profile = () => {
             label="Email Address"
             name="email"
             value={profile.email}
-            onChange={handleChange}
             margin="normal"
             variant="outlined"
             InputProps={{
@@ -144,7 +179,6 @@ const Profile = () => {
             fullWidth
             label="Age"
             name="age"
-            type="number"
             value={profile.age}
             onChange={handleChange}
             margin="normal"

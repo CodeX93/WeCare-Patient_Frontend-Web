@@ -14,6 +14,7 @@ import {
   CardContent,
 } from "@mui/material";
 import axios from "axios";
+import { IP } from "../assets/ConstantValues";
 import LeftNavBar from "../Components/LeftNavBar";
 import { useNavigate } from "react-router-dom";
 
@@ -35,9 +36,7 @@ function PatientUpload() {
     // Function to fetch doctors using Axios
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:6874/api/user/getAll"
-        );
+        const response = await axios.get(`${IP}:5006/api/user/getAll`);
         setDoctors(response.data);
         console.log(response.data); // Update the state with the fetched doctors
       } catch (error) {
@@ -62,10 +61,30 @@ function PatientUpload() {
     navigate("/specificdoctor", { state: { doctor } }); // Navigate with doctor data
   };
 
+  const layoutStyle = {
+    display: "flex",
+    marginTop: "20px",
+  };
+
+  const contentStyle = {
+    flexGrow: 1,
+    marginLeft: "10px",
+    marginTop: "80px",
+  };
+
+  const headingStyle = {
+    color: "#333",
+    textAlign: "center",
+    marginBottom: "24px",
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontWeight: "bold",
+    fontSize: "2rem",
+  };
+
   return (
-    <Box style={{ display: "flex", marginTop: "20px" }}>
+    <Box style={layoutStyle}>
       <LeftNavBar />
-      <Container style={{ flexGrow: 1, marginLeft: "10px" }}>
+      <Container style={contentStyle}>
         <Paper style={{ padding: "20px", margin: "20px" }}>
           <Box
             display="flex"
@@ -73,10 +92,7 @@ function PatientUpload() {
             alignItems="center"
             marginBottom="20px"
           >
-            <Typography
-              variant="h5"
-              style={{ marginTop: "20px", marginBottom: "10px" }}
-            >
+            <Typography variant="h5" style={headingStyle}>
               Doctor Specialties
             </Typography>
             <FormControl variant="outlined" sx={{ minWidth: 120 }}>
@@ -107,11 +123,17 @@ function PatientUpload() {
               >
                 <Card
                   onClick={() => handleClick(doctor)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", textAlign: "center" }}
                 >
                   <CardMedia
                     component="img"
                     height="140"
+                    sx={{
+                      borderRadius: "50%",
+                      width: 140,
+                      height: 140,
+                      objectFit: "cover", // Adjust as needed
+                    }}
                     image={doctor.doctorData.profilePic}
                     alt={doctor.name}
                   />

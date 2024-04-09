@@ -17,11 +17,16 @@ const AppointmentCard = ({ appointment, onSelect }) => {
     <Card sx={{ marginBottom: 2 }}>
       <CardContent>
         <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-          {"Dr. " + appointment.doctor}
+          {"Dr. " + appointment.doctorName}
         </Typography>
-        <Typography variant="body1">{appointment.appointmentDate}</Typography>
         <Typography variant="body1">
-          Speciality: {appointment.speciality}
+          {new Date(appointment.date)
+            .toLocaleDateString("en-GB")
+            .replace(/\//g, " - ")}
+        </Typography>
+
+        <Typography variant="body1">
+          Speciality: {appointment.department}
         </Typography>
         <Typography variant="body1">
           Complain: {appointment.complain}
@@ -31,7 +36,13 @@ const AppointmentCard = ({ appointment, onSelect }) => {
           variant="contained"
           color="primary"
           onClick={handleClick}
-          sx={{ marginTop: 2 }}
+          sx={{
+            marginTop: 2,
+            backgroundColor: "#307867",
+            ":hover": {
+              backgroundColor: "#5cac9e",
+            },
+          }}
         >
           View Details
         </Button>

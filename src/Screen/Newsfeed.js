@@ -15,6 +15,7 @@ import {
   Avatar,
   Divider,
 } from "@mui/material";
+import { IP } from "../assets/ConstantValues";
 import LeftNavBar from "../Components/LeftNavBar"; // Your custom navbar code
 
 function Newsfeed() {
@@ -32,7 +33,7 @@ function Newsfeed() {
     const fetchPosts = async () => {
       try {
         // Replace with your API endpoint
-        const response = await fetch("http://localhost:4000/forum/getPost");
+        const response = await fetch(`${IP}:4000/forum/getPost`);
         if (!response.ok) {
           throw new Error("Failed to fetch posts");
         }
@@ -67,10 +68,7 @@ function Newsfeed() {
       };
 
       // Send a POST request to your backend API using Axios
-      const response = await axios.post(
-        "http://localhost:4000/forum/createPost",
-        newPost
-      );
+      const response = await axios.post(`${IP}:4000/forum/createPost`, newPost);
 
       if (!response.data || response.status !== 200) {
         throw new Error("Failed to create a new post");

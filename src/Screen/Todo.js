@@ -108,26 +108,33 @@ const MedicationTodoList = () => {
 
   const layoutStyle = {
     display: "flex",
-    marginTop: "20px",
+    marginTop: "40px",
   };
 
   const contentStyle = {
     flexGrow: 1,
-
     marginLeft: "10px",
+    marginTop: "80px",
+  };
+
+  const headingStyle = {
+    color: "#333",
+    textAlign: "center",
+    marginBottom: "20px",
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontWeight: "bold",
+    fontSize: "2rem",
   };
 
   return (
     <Box style={layoutStyle}>
       <LeftNavBar />
       <Container style={contentStyle}>
-        <Typography variant="h4" sx={{ my: 4 }}>
-          Today's Medication Schedule
-        </Typography>
+        <Typography variant="h4">Today's Medication Schedule</Typography>
 
         {["morning", "noon", "night"].map((category) => (
           <div key={category}>
-            <Typography variant="h6">
+            <Typography variant="h6" my={2}>
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </Typography>
             <List>
@@ -148,16 +155,14 @@ const MedicationTodoList = () => {
           variant="contained"
           color="primary"
           onClick={handleUpdate}
-          sx={{ my: 4 }}
+          sx={{ my: 4, backgroundColor: "#307867" }}
         >
           Update Todo
         </Button>
 
         <Divider sx={{ my: 4 }} />
 
-        <Typography variant="h4" sx={{ mb: 4 }}>
-          Missed Medications
-        </Typography>
+        <Typography variant="h4">Missed Medications</Typography>
         <List>
           {missed.map((todo) => (
             <ListItem key={todo.id}>

@@ -1,87 +1,83 @@
 import React, { useState } from "react";
-
+import { makeStyles } from "@mui/styles";
 import {
   Drawer,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  Avatar,
   ListItemAvatar,
+  Avatar,
   Divider,
   Box,
   IconButton,
+  Typography,
+  Toolbar,
+  AppBar,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-
 import MenuIcon from "@mui/icons-material/Menu";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import EventIcon from "@mui/icons-material/Event";
-import FolderIcon from "@mui/icons-material/Folder";
-import ChatIcon from "@mui/icons-material/Chat";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
-import ReceiptIcon from "@mui/icons-material/Receipt";
-import ForumIcon from "@mui/icons-material/Forum";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import PersonIcon from "@mui/icons-material/Person";
-import { makeStyles } from "@mui/styles";
+import {
+  Dashboard as DashboardIcon,
+  Assignment as AssignmentIcon,
+  Event as EventIcon,
+  Folder as FolderIcon,
+  Chat as ChatIcon,
+  LocalHospital as LocalHospitalIcon,
+  Receipt as ReceiptIcon,
+  Forum as ForumIcon,
+  ExitToApp as ExitToAppIcon,
+  Person as PersonIcon,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../Context/UserContext";
 import { getAuth, signOut } from "firebase/auth";
+import logo from "../assets/WeCare - Logo .png";
+
+const drawerWidth = 280;
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    display: "flex",
+  },
+  appBar: {
+    zIndex: theme.zIndex.drawer + 1,
+  },
   drawer: {
-    width: "240px",
-    [theme.breakpoints.down("sm")]: {
-      width: "56px", // Smaller width for small screens
-    },
+    width: drawerWidth,
+    flexShrink: 0,
   },
-  avatar: {
-    backgroundColor: "#757ce8",
-  },
-  drawerContainer: {
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-  },
-  drawerList: {
-    flexGrow: 1,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
+  drawerPaper: {
+    width: drawerWidth,
   },
   menuButton: {
     marginRight: theme.spacing(2),
-    [theme.breakpoints.up("sm")]: {
-      display: "none",
-    },
   },
-  selectedIcon: {
-    color: theme.palette.primary.main, // Color for the selected icon
-  },
-  marginRight: {
-    margin: "2%",
+  content: {
+    flexGrow: 1,
+    padding: theme.spacing(3),
   },
 }));
 
 function LeftNavbar() {
-  const theme = useTheme();
-  const classes = useStyles(theme);
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [drawerOpen, setDrawerOpen] = useState(!isMobile);
-  const [selectedItem, setSelectedItem] = useState("");
+  const classes = useStyles();
+  const navigate = useNavigate();
   const { user } = useUser();
+  const auth = getAuth();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [drawerOpen, setDrawerOpen] = useState(!isMobile);
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
   };
 
-  const navigator = useNavigate();
-  const handleNavigation = (path, item) => {
+  const handleNavigation = (path) => {
     return () => {
-      navigator(path);
+      navigate(path);
       if (path === "/") {
         signOut(auth)
           .then(() => {
@@ -91,153 +87,118 @@ function LeftNavbar() {
             console.log("Log out failed");
           });
       }
-      setSelectedItem(item);
-      if (isMobile) setDrawerOpen(false); // Close drawer after navigation on mobile
+      if (isMobile) setDrawerOpen(false);
     };
   };
 
-  // Function to determine if an item is selected
-  const isSelected = (item) => selectedItem === item;
-  const auth = getAuth();
+  const menuItems = [
+    { path: "/home", icon: <DashboardIcon />, text: "Dashboard" },
+    { path: "/todo", icon: <AssignmentIcon />, text: "Todo" },
+    { path: "/appointment", icon: <EventIcon />, text: "Appointment" },
+    { path: "/doctors", icon: <LocalHospitalIcon />, text: "Doctors" },
+    { path: "/chats", icon: <ChatIcon />, text: "Chats" },
+    { path: "/medical-record", icon: <FolderIcon />, text: "Medical Records" },
+    { path: "/bill", icon: <ReceiptIcon />, text: "Bills" },
+    { path: "/forum", icon: <ForumIcon />, text: "Forum" },
+    { path: "/profile", icon: <PersonIcon />, text: "Profile" },
+  ];
 
   return (
-    <Box className={classes.marginRight}>
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        edge="start"
-        onClick={handleDrawerToggle}
-        className={classes.menuButton}
+    <div>
+      <AppBar
+        position="fixed"
+        className={classes.appBar}
+        sx={{ height: 60, backgroundColor: "#307867" }}
       >
-        <MenuIcon />
-      </IconButton>
+        <Toolbar>
+          {isMobile ? (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerToggle}
+              edge="start"
+              className={classes.menuButton}
+            >
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            <img
+              src={logo}
+              alt="Logo"
+              className={classes.logo}
+              style={{
+                width: "auto",
+                height: "200%",
+              }}
+            />
+          )}
+          <Typography
+            variant="h5"
+            noWrap
+            style={{ fontWeight: "bolder", letterSpacing: 1.8 }}
+          >
+            WeCare
+          </Typography>
+        </Toolbar>
+      </AppBar>
       <Drawer
         className={classes.drawer}
-        variant="permanent"
+        variant={isMobile ? "temporary" : "permanent"}
+        anchor="left"
         open={drawerOpen}
         onClose={handleDrawerToggle}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
       >
-        <List className={classes.drawerContainer}>
-          {/* Profile with Avatar */}
-          <ListItem button onClick={handleNavigation("/profile", "profile")}>
+        <Box
+          sx={{
+            mt: 8,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        ></Box>
+        <Divider />
+        <List>
+          <ListItem button onClick={handleNavigation("/profile")}>
             <ListItemAvatar>
-              {user.profileImageUrl ? (
-                <Avatar src={user.profileImageUrl} className={classes.avatar} />
-              ) : (
+              <Avatar src={user.profileImageUrl || ""}>
                 <PersonIcon />
-              )}
+              </Avatar>
             </ListItemAvatar>
-            {drawerOpen && (
-              <ListItemText primary={user ? user.username : "Guest"} />
-            )}
+            <ListItemText
+              style={{ fontSize: "22", fontWeight: "bolder" }}
+              primary={user ? user.username : "Guest"}
+            />
           </ListItem>
           <Divider />
-          <Box className={classes.drawerList}>
-            {/* Dashboard */}
-            <ListItem button onClick={handleNavigation("/home", "home")}>
-              <ListItemIcon>
-                <DashboardIcon
-                  className={isSelected("home") ? classes.selectedIcon : ""}
-                />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Dashboard" />}
-            </ListItem>
-            {/* ToDo */}
-            <ListItem button onClick={handleNavigation("/todo", "todo")}>
-              <ListItemIcon>
-                <AssignmentIcon
-                  className={isSelected("todo") ? classes.selectedIcon : ""}
-                />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Todo" />}
-            </ListItem>
-            {/* Appointment */}
+          {menuItems.map((item) => (
             <ListItem
               button
-              onClick={handleNavigation("/appointment", "appointment")}
+              key={item.path}
+              onClick={handleNavigation(item.path)}
+              selected={window.location.pathname === item.path}
             >
-              <ListItemIcon>
-                <EventIcon
-                  className={
-                    isSelected("appointment") ? classes.selectedIcon : ""
-                  }
-                />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Appointment" />}
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
             </ListItem>
-            {/* Doctors */}
-            <ListItem button onClick={handleNavigation("/doctors", "doctors")}>
-              <ListItemIcon>
-                <LocalHospitalIcon
-                  className={isSelected("doctors") ? classes.selectedIcon : ""}
-                />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Doctors" />}
-            </ListItem>
-            {/* Chats */}
-            <ListItem button onClick={handleNavigation("/chats", "chats")}>
-              <ListItemIcon>
-                <ChatIcon
-                  className={isSelected("chats") ? classes.selectedIcon : ""}
-                />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Chats" />}
-            </ListItem>
-            {/* Medical Records */}
-            <ListItem
-              button
-              onClick={handleNavigation("/medical-record", "medical-record")}
-            >
-              <ListItemIcon>
-                <FolderIcon
-                  className={
-                    isSelected("medical-record") ? classes.selectedIcon : ""
-                  }
-                />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Medical Records" />}
-            </ListItem>
-            {/* Bills */}
-            <ListItem button onClick={handleNavigation("/bill", "bill")}>
-              <ListItemIcon>
-                <ReceiptIcon
-                  className={isSelected("bill") ? classes.selectedIcon : ""}
-                />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Bills" />}
-            </ListItem>
-            {/* Forum */}
-            <ListItem button onClick={handleNavigation("/forum", "forum")}>
-              <ListItemIcon>
-                <ForumIcon
-                  className={isSelected("forum") ? classes.selectedIcon : ""}
-                />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Forum" />}
-            </ListItem>
-            {/* Profile */}
-            <ListItem button onClick={handleNavigation("/profile", "profile")}>
-              <ListItemIcon>
-                <PersonIcon
-                  className={isSelected("profile") ? classes.selectedIcon : ""}
-                />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Profile" />}
-            </ListItem>
-          </Box>
+          ))}
           <Divider />
-          {/* Sign Out */}
-          <ListItem button onClick={handleNavigation("/", "sign-out")}>
+          <ListItem button onClick={handleNavigation("/")}>
             <ListItemIcon>
-              <ExitToAppIcon
-                className={isSelected("sign-out") ? classes.selectedIcon : ""}
-              />
+              <ExitToAppIcon />
             </ListItemIcon>
-            {drawerOpen && <ListItemText primary="Sign Out" />}
+            <ListItemText primary="Sign Out" />
           </ListItem>
         </List>
       </Drawer>
-    </Box>
+      <main className={classes.content}>
+        <Toolbar />
+        {/* Your main content goes here */}
+      </main>
+    </div>
   );
 }
 
